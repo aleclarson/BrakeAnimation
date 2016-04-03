@@ -1,0 +1,14 @@
+{
+  "name": "BrakeAnimation",
+  "version": "1.0.0",
+  "dependencies": {
+    "Animated": "aleclarson/Animated#1.0.1",
+    "easing": "aleclarson/easing#1.0.0",
+    "factory": "aleclarson/factory#1.0.0"
+  },
+  "lotus": {
+    "plugins": [
+      "lotus-coffee"
+    ]
+  }
+}
