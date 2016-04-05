@@ -16,46 +16,84 @@ module.exports = Factory "BrakeAnimation",
   optionDefaults:
     easing: Easing "linear"
 
-  initValues: (options) ->
+  initFrozenValues: (options) ->
 
-    _startVelocity: options.velocity
+    startVelocity: options.velocity
 
-    _duration: options.duration
+    finalTime: options.duration
 
-    _easing: options.easing
 
-    _curTime: @__startTime
+    easing: options.easing
 
-    _curValue: @__startValue
+  initValues: ->
 
-    _curVelocity: options.velocity
+    progress: 0
 
-  init: ->
-    GLOBAL.brakeAnim = [
-      { startValue: @_curValue, startVelocity: @_curVelocity }
-    ]
+    time: null
+
+    value: null
+
+    velocity: null
+
+    frames: null
+
+    _lastTime: null
+
+    _lastValue: null
+
+    _lastVelocity: null
+
+  # The result of the easing function must be inversed to flip the
+  # curve by the y-axis. This creates a 1 -> 0 progression.
+  _velocityAtProgress: (progress) ->
+    return @startVelocity * (1 - @easing progress)
+
+  # When a specific duration is desired, we reduce velocity based
+  # on how much time has passed since the animation started.
+  _slowByTime: ->
+    @time = Math.min @finalTime, Date.now() - @__startTime
+    @value = @_lastValue + @_lastVelocity * (@time - @_lastTime)
+    @progress = @time / @finalTime
+    @velocity = @_velocityAtProgress @progress
+    return
+
+  __onStart: ->
+
+    @time = 0
+    @value = @__startValue
+    @velocity = @startVelocity
+
+    GLOBAL.brakeAnim = this
+    @frames = [{
+      @progress
+      @time
+      @value
+      @velocity
+    }]
+
+    @__requestAnimationFrame()
+
+  __onStop: ->
+    log.it "finalVelocity: " + @velocity
 
   __computeValue: ->
 
-    now = Date.now()
+    @_lastTime = @time
+    @_lastValue = @value
+    @_lastVelocity = @velocity
 
-    @_lastTime = @_curTime
-    @_lastValue = @_curValue
-    @_lastVelocity = @_curVelocity
+    @_slowByTime()
 
-    @_curTime = Math.min @_duration, now - @__startTime
-    @_curVelocity = @_easing @_curTime / @_duration
-    @_curValue = @_lastValue + @_lastVelocity * (@_curTime - @_lastTime)
 
-    assertType @_curValue, Number
-
-    GLOBAL.brakeAnim.push {
-      value: @_curValue
-      velocity: @_curVelocity
+    @frames.push {
+      @progress
+      @time
+      @value
+      @velocity
     }
 
-    return @_curValue
+    return @value
 
   __didComputeValue: ->
-    return if @_curTime < @_duration
-    @__debouncedOnEnd yes
+    if @progress is 1
+      @__debouncedOnEnd yes
