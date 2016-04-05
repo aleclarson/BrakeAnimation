@@ -10,7 +10,8 @@ module.exports = Factory "BrakeAnimation",
 
   optionTypes:
     velocity: Number
-    duration: Number
+    duration: Number.Maybe
+    distance: Number.Maybe
     easing: Function
 
   optionDefaults:
@@ -22,6 +23,7 @@ module.exports = Factory "BrakeAnimation",
 
     finalTime: options.duration
 
+    finalDistance: options.distance
 
     easing: options.easing
 
@@ -43,6 +45,12 @@ module.exports = Factory "BrakeAnimation",
 
     _lastVelocity: null
 
+  init: (options) ->
+
+    if options.duration is undefined
+      assert options.distance isnt undefined,
+        reason: "Must define either 'options.duration' or 'options.distance'!"
+
   # The result of the easing function must be inversed to flip the
   # curve by the y-axis. This creates a 1 -> 0 progression.
   _velocityAtProgress: (progress) ->
@@ -54,6 +62,15 @@ module.exports = Factory "BrakeAnimation",
     @time = Math.min @finalTime, Date.now() - @__startTime
     @value = @_lastValue + @_lastVelocity * (@time - @_lastTime)
     @progress = @time / @finalTime
+    @velocity = @_velocityAtProgress @progress
+    return
+
+  # When a specific distance is desired, we reduce velocity based
+  # on how much distance is travelled since the animation started.
+  _slowByDistance: ->
+    @time = Date.now() - @__startTime
+    @value = @_lastValue + @_lastVelocity * (@time - @_lastTime)
+    @progress = Math.min 1, Math.abs(@value - @__startValue) / @finalDistance
     @velocity = @_velocityAtProgress @progress
     return
 
@@ -82,8 +99,11 @@ module.exports = Factory "BrakeAnimation",
     @_lastValue = @value
     @_lastVelocity = @velocity
 
-    @_slowByTime()
+    if @finalTime isnt undefined
+      @_slowByTime()
 
+    else
+      @_slowByDistance()
 
     @frames.push {
       @progress
