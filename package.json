@@ -5,7 +5,8 @@
   "dependencies": {
     "Animated": "aleclarson/Animated#1.0.1",
     "easing": "aleclarson/easing#1.0.0",
-    "factory": "aleclarson/factory#1.0.0"
+    "getArgProp": "aleclarson/getArgProp#1.0.0",
+    "Type": "aleclarson/Type#1.0.0"
   },
   "lotus": {
     "plugins": [

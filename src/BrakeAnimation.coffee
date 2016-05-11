@@ -1,49 +1,50 @@
 
 { Animation } = require "Animated"
 
-Factory = require "factory"
+getArgProp = require "getArgProp"
 Easing = require "easing"
+Type = require "Type"
 
-module.exports = Factory "BrakeAnimation",
+type = Type "BrakeAnimation"
 
-  kind: Animation
+type.optionTypes =
+  velocity: Number
+  duration: Number
+  easing: Function
+  maxValue: Number.Maybe
 
-  optionTypes:
-    velocity: Number
-    duration: Number
-    easing: Function
-    maxValue: Number.Maybe
+type.optionDefaults =
+  easing: Easing "linear"
 
-  optionDefaults:
-    easing: Easing "linear"
+type.defineFrozenValues
 
-  initFrozenValues: (options) ->
+  startVelocity: getArgProp "velocity"
 
-    startVelocity: options.velocity
+  finalTime: getArgProp "duration"
 
-    finalTime: options.duration
+  easing: getArgProp "easing"
 
-    easing: options.easing
+  maxValue: getArgProp "maxValue"
 
-    maxValue: options.maxValue
+type.defineValues
 
-  initValues: ->
+  progress: 0
 
-    progress: 0
+  time: null
 
-    time: null
+  value: null
 
-    value: null
+  velocity: null
 
-    velocity: null
+  frames: null
 
-    frames: null
+  _lastTime: null
 
-    _lastTime: null
+  _lastValue: null
 
-    _lastValue: null
+  _lastVelocity: null
 
-    _lastVelocity: null
+type.defineMethods
 
   # The result of the easing function must be inversed to flip the
   # curve by the y-axis. This creates a 1 -> 0 progression.
@@ -99,3 +100,5 @@ module.exports = Factory "BrakeAnimation",
     @value
     @velocity
   }
+
+module.exports = type.build()

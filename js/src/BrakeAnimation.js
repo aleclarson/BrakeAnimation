@@ -1,42 +1,45 @@
-var Animation, Easing, Factory;
+var Animation, Easing, Type, getArgProp, type;
 
 Animation = require("Animated").Animation;
 
-Factory = require("factory");
+getArgProp = require("getArgProp");
 
 Easing = require("easing");
 
-module.exports = Factory("BrakeAnimation", {
-  kind: Animation,
-  optionTypes: {
-    velocity: Number,
-    duration: Number,
-    easing: Function,
-    maxValue: Number.Maybe
-  },
-  optionDefaults: {
-    easing: Easing("linear")
-  },
-  initFrozenValues: function(options) {
-    return {
-      startVelocity: options.velocity,
-      finalTime: options.duration,
-      easing: options.easing,
-      maxValue: options.maxValue
-    };
-  },
-  initValues: function() {
-    return {
-      progress: 0,
-      time: null,
-      value: null,
-      velocity: null,
-      frames: null,
-      _lastTime: null,
-      _lastValue: null,
-      _lastVelocity: null
-    };
-  },
+Type = require("Type");
+
+type = Type("BrakeAnimation");
+
+type.optionTypes = {
+  velocity: Number,
+  duration: Number,
+  easing: Function,
+  maxValue: Number.Maybe
+};
+
+type.optionDefaults = {
+  easing: Easing("linear")
+};
+
+type.defineFrozenValues({
+  startVelocity: getArgProp("velocity"),
+  finalTime: getArgProp("duration"),
+  easing: getArgProp("easing"),
+  maxValue: getArgProp("maxValue")
+});
+
+type.defineValues({
+  progress: 0,
+  time: null,
+  value: null,
+  velocity: null,
+  frames: null,
+  _lastTime: null,
+  _lastValue: null,
+  _lastVelocity: null
+});
+
+type.defineMethods({
   _velocityAtProgress: function(progress) {
     return this.startVelocity * (1 - this.easing(progress));
   },
@@ -89,5 +92,7 @@ module.exports = Factory("BrakeAnimation", {
     };
   }
 });
+
+module.exports = type.build();
 
 //# sourceMappingURL=../../map/src/BrakeAnimation.map
