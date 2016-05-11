@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "./js/src/BrakeAnimation",
   "dependencies": {
-    "Animated": "aleclarson/Animated#1.0.1",
+    "Animated": "aleclarson/Animated#2.0.0",
     "easing": "aleclarson/easing#1.0.0",
     "getArgProp": "aleclarson/getArgProp#1.0.0",
     "Type": "aleclarson/Type#1.0.0"
