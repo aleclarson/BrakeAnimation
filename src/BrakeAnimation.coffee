@@ -12,6 +12,7 @@ module.exports = Factory "BrakeAnimation",
     velocity: Number
     duration: Number
     easing: Function
+    maxValue: Number.Maybe
 
   optionDefaults:
     easing: Easing "linear"
@@ -22,8 +23,9 @@ module.exports = Factory "BrakeAnimation",
 
     finalTime: options.duration
 
-
     easing: options.easing
+
+    maxValue: options.maxValue
 
   initValues: ->
 
@@ -57,24 +59,22 @@ module.exports = Factory "BrakeAnimation",
     @velocity = @_velocityAtProgress @progress
     return
 
+  _clampAtMaxValue: ->
+    if @value isnt @maxValue
+      movingUp = @__startVelocity < 0
+      underMax = @value < @maxValue
+      return if movingUp is underMax
+    @value = @maxValue
+    @progress = 1
+    @velocity = 0
+
   __onStart: ->
 
     @time = 0
     @value = @__startValue
     @velocity = @startVelocity
 
-    GLOBAL.brakeAnim = this
-    @frames = [{
-      @progress
-      @time
-      @value
-      @velocity
-    }]
-
     @__requestAnimationFrame()
-
-  __onStop: ->
-    log.it "finalVelocity: " + @velocity
 
   __computeValue: ->
 
@@ -84,16 +84,18 @@ module.exports = Factory "BrakeAnimation",
 
     @_slowByTime()
 
-
-    @frames.push {
-      @progress
-      @time
-      @value
-      @velocity
-    }
+    if @maxValue isnt undefined
+      @_clampAtMaxValue()
 
     return @value
 
   __didComputeValue: ->
     if @progress is 1
       @__debouncedOnEnd yes
+
+  __captureFrame: -> {
+    @progress
+    @time
+    @value
+    @velocity
+  }

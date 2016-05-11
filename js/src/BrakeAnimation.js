@@ -11,50 +11,82 @@ module.exports = Factory("BrakeAnimation", {
   optionTypes: {
     velocity: Number,
     duration: Number,
-    easing: Function
+    easing: Function,
+    maxValue: Number.Maybe
   },
   optionDefaults: {
     easing: Easing("linear")
   },
-  initValues: function(options) {
+  initFrozenValues: function(options) {
     return {
-      _startVelocity: options.velocity,
-      _duration: options.duration,
-      _easing: options.easing,
-      _curTime: this.__startTime,
-      _curValue: this.__startValue,
-      _curVelocity: options.velocity
+      startVelocity: options.velocity,
+      finalTime: options.duration,
+      easing: options.easing,
+      maxValue: options.maxValue
     };
   },
-  init: function() {
-    return GLOBAL.brakeAnim = [
-      {
-        startValue: this._curValue,
-        startVelocity: this._curVelocity
+  initValues: function() {
+    return {
+      progress: 0,
+      time: null,
+      value: null,
+      velocity: null,
+      frames: null,
+      _lastTime: null,
+      _lastValue: null,
+      _lastVelocity: null
+    };
+  },
+  _velocityAtProgress: function(progress) {
+    return this.startVelocity * (1 - this.easing(progress));
+  },
+  _slowByTime: function() {
+    this.time = Math.min(this.finalTime, Date.now() - this.__startTime);
+    this.value = this._lastValue + this._lastVelocity * (this.time - this._lastTime);
+    this.progress = this.time / this.finalTime;
+    this.velocity = this._velocityAtProgress(this.progress);
+  },
+  _clampAtMaxValue: function() {
+    var movingUp, underMax;
+    if (this.value !== this.maxValue) {
+      movingUp = this.__startVelocity < 0;
+      underMax = this.value < this.maxValue;
+      if (movingUp === underMax) {
+        return;
       }
-    ];
+    }
+    this.value = this.maxValue;
+    this.progress = 1;
+    return this.velocity = 0;
+  },
+  __onStart: function() {
+    this.time = 0;
+    this.value = this.__startValue;
+    this.velocity = this.startVelocity;
+    return this.__requestAnimationFrame();
   },
   __computeValue: function() {
-    var now;
-    now = Date.now();
-    this._lastTime = this._curTime;
-    this._lastValue = this._curValue;
-    this._lastVelocity = this._curVelocity;
-    this._curTime = Math.min(this._duration, now - this.__startTime);
-    this._curVelocity = this._easing(this._curTime / this._duration);
-    this._curValue = this._lastValue + this._lastVelocity * (this._curTime - this._lastTime);
-    assertType(this._curValue, Number);
-    GLOBAL.brakeAnim.push({
-      value: this._curValue,
-      velocity: this._curVelocity
-    });
-    return this._curValue;
+    this._lastTime = this.time;
+    this._lastValue = this.value;
+    this._lastVelocity = this.velocity;
+    this._slowByTime();
+    if (this.maxValue !== void 0) {
+      this._clampAtMaxValue();
+    }
+    return this.value;
   },
   __didComputeValue: function() {
-    if (this._curTime < this._duration) {
-      return;
+    if (this.progress === 1) {
+      return this.__debouncedOnEnd(true);
     }
-    return this.__debouncedOnEnd(true);
+  },
+  __captureFrame: function() {
+    return {
+      progress: this.progress,
+      time: this.time,
+      value: this.value,
+      velocity: this.velocity
+    };
   }
 });
 

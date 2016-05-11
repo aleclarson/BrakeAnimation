@@ -1,6 +1,7 @@
 {
   "name": "BrakeAnimation",
   "version": "1.0.0",
+  "main": "./js/src/BrakeAnimation",
   "dependencies": {
     "Animated": "aleclarson/Animated#1.0.1",
     "easing": "aleclarson/easing#1.0.0",
