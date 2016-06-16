@@ -7,6 +7,8 @@ Type = require "Type"
 
 type = Type "BrakeAnimation"
 
+type.inherits Animation
+
 type.optionTypes =
   velocity: Number
   duration: Number
@@ -54,7 +56,7 @@ type.defineMethods
   # When a specific duration is desired, we reduce velocity based
   # on how much time has passed since the animation started.
   _slowByTime: ->
-    @time = Math.min @finalTime, Date.now() - @__startTime
+    @time = Math.min @finalTime, Date.now() - @startTime
     @value = @_lastValue + @_lastVelocity * (@time - @_lastTime)
     @progress = @time / @finalTime
     @velocity = @_velocityAtProgress @progress
@@ -62,20 +64,22 @@ type.defineMethods
 
   _clampAtMaxValue: ->
     if @value isnt @maxValue
-      movingUp = @__startVelocity < 0
+      movingUp = @startVelocity < 0
       underMax = @value < @maxValue
       return if movingUp is underMax
     @value = @maxValue
     @progress = 1
     @velocity = 0
 
-  __onStart: ->
+type.overrideMethods
+
+  __didStart: ->
 
     @time = 0
-    @value = @__startValue
+    @value = @startValue
     @velocity = @startVelocity
 
-    @__requestAnimationFrame()
+    @_requestAnimationFrame()
 
   __computeValue: ->
 
@@ -90,14 +94,14 @@ type.defineMethods
 
     return @value
 
-  __didComputeValue: ->
+  __didUpdate: ->
     if @progress is 1
-      @__debouncedOnEnd yes
+      @finish()
 
   __captureFrame: -> {
     @progress
-    @time
     @value
+    @time
     @velocity
   }
 

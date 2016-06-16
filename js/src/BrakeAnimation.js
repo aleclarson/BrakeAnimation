@@ -10,6 +10,8 @@ Type = require("Type");
 
 type = Type("BrakeAnimation");
 
+type.inherits(Animation);
+
 type.optionTypes = {
   velocity: Number,
   duration: Number,
@@ -44,7 +46,7 @@ type.defineMethods({
     return this.startVelocity * (1 - this.easing(progress));
   },
   _slowByTime: function() {
-    this.time = Math.min(this.finalTime, Date.now() - this.__startTime);
+    this.time = Math.min(this.finalTime, Date.now() - this.startTime);
     this.value = this._lastValue + this._lastVelocity * (this.time - this._lastTime);
     this.progress = this.time / this.finalTime;
     this.velocity = this._velocityAtProgress(this.progress);
@@ -52,7 +54,7 @@ type.defineMethods({
   _clampAtMaxValue: function() {
     var movingUp, underMax;
     if (this.value !== this.maxValue) {
-      movingUp = this.__startVelocity < 0;
+      movingUp = this.startVelocity < 0;
       underMax = this.value < this.maxValue;
       if (movingUp === underMax) {
         return;
@@ -61,12 +63,15 @@ type.defineMethods({
     this.value = this.maxValue;
     this.progress = 1;
     return this.velocity = 0;
-  },
-  __onStart: function() {
+  }
+});
+
+type.overrideMethods({
+  __didStart: function() {
     this.time = 0;
-    this.value = this.__startValue;
+    this.value = this.startValue;
     this.velocity = this.startVelocity;
-    return this.__requestAnimationFrame();
+    return this._requestAnimationFrame();
   },
   __computeValue: function() {
     this._lastTime = this.time;
@@ -78,16 +83,16 @@ type.defineMethods({
     }
     return this.value;
   },
-  __didComputeValue: function() {
+  __didUpdate: function() {
     if (this.progress === 1) {
-      return this.__debouncedOnEnd(true);
+      return this.finish();
     }
   },
   __captureFrame: function() {
     return {
       progress: this.progress,
-      time: this.time,
       value: this.value,
+      time: this.time,
       velocity: this.velocity
     };
   }
