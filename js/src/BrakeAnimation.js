@@ -1,8 +1,8 @@
-var Animation, Easing, Type, getArgProp, type;
+var Animation, Easing, Type, fromArgs, type;
 
 Animation = require("Animated").Animation;
 
-getArgProp = require("getArgProp");
+fromArgs = require("fromArgs");
 
 Easing = require("easing");
 
@@ -24,10 +24,10 @@ type.optionDefaults = {
 };
 
 type.defineFrozenValues({
-  startVelocity: getArgProp("velocity"),
-  finalTime: getArgProp("duration"),
-  easing: getArgProp("easing"),
-  maxValue: getArgProp("maxValue")
+  startVelocity: fromArgs("velocity"),
+  finalTime: fromArgs("duration"),
+  easing: fromArgs("easing"),
+  maxValue: fromArgs("maxValue")
 });
 
 type.defineValues({
@@ -100,4 +100,4 @@ type.overrideMethods({
 
 module.exports = type.build();
 
-//# sourceMappingURL=../../map/src/BrakeAnimation.map
+//# sourceMappingURL=map/BrakeAnimation.map

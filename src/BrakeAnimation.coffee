@@ -1,7 +1,7 @@
 
 { Animation } = require "Animated"
 
-getArgProp = require "getArgProp"
+fromArgs = require "fromArgs"
 Easing = require "easing"
 Type = require "Type"
 
@@ -20,13 +20,13 @@ type.optionDefaults =
 
 type.defineFrozenValues
 
-  startVelocity: getArgProp "velocity"
+  startVelocity: fromArgs "velocity"
 
-  finalTime: getArgProp "duration"
+  finalTime: fromArgs "duration"
 
-  easing: getArgProp "easing"
+  easing: fromArgs "easing"
 
-  maxValue: getArgProp "maxValue"
+  maxValue: fromArgs "maxValue"
 
 type.defineValues
 
