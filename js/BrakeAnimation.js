@@ -12,16 +12,12 @@ type = Type("BrakeAnimation");
 
 type.inherits(Animation);
 
-type.optionTypes = {
-  velocity: Number,
-  duration: Number,
-  easing: Function,
-  maxValue: Number.Maybe
-};
-
-type.optionDefaults = {
-  easing: Easing("linear")
-};
+type.defineOptions({
+  velocity: Number.isRequired,
+  duration: Number.isRequired,
+  easing: Function.withDefault(Easing("linear")),
+  maxValue: Number
+});
 
 type.defineFrozenValues({
   startVelocity: fromArgs("velocity"),
