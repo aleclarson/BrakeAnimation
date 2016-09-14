@@ -1,7 +1,6 @@
 
-{ Animation } = require "Animated"
+{Animation} = require "Animated"
 
-fromArgs = require "fromArgs"
 Easing = require "easing"
 Type = require "Type"
 
@@ -15,15 +14,15 @@ type.defineOptions
   easing: Function.withDefault Easing "linear"
   maxValue: Number
 
-type.defineFrozenValues
+type.defineFrozenValues (options) ->
 
-  startVelocity: fromArgs "velocity"
+  startVelocity: options.velocity
 
-  finalTime: fromArgs "duration"
+  finalTime: options.duration
 
-  easing: fromArgs "easing"
+  easing: options.easing
 
-  maxValue: fromArgs "maxValue"
+  maxValue: options.maxValue
 
 type.defineValues
 
@@ -34,8 +33,6 @@ type.defineValues
   value: null
 
   velocity: null
-
-  frames: null
 
   _lastTime: null
 
